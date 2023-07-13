@@ -31,6 +31,37 @@ and ICU notes from the Mount Sinai Health System Data Warehouse (NYC).
 Access to such datasets is restricted, hence, we provide here a subset of the English Wikipedia dataset[^1] 
 that was rearranged to resemble the structure of clinical corpora and can be used to test the code.
 
+## Pipeline
+
+### Clinical notes preprocessing
+From root folder run
+```
+bash preprocessing.sh
+```
+to execute `dump_notes.py` (raw note file -> structured csv file with metadata) and `note_tokenization.py` 
+(structured csv file -> dataset_name.split/dataset_name.split.size/dataset_mame.split.metadata). In `data` folder we
+store the file with tokenized concatenated notes and their byte offsets, together with their metadata.
+
+### Suffix array and duplication identification
+The code to build the suffix array and find the duplicated text throughout the entire corpus was taken as is from 
+[Lee et al., 2021](https://github.com/google-research/deduplicate-text-datasets/tree/master). To the pipeline, we added 
+the module `duplicated_sentences.py` which enables the generation of the files `dataset_name.split.remove.byterange.wnr` 
+(with the byte ranges of sentences duplicated within the same note) and `dataset_name.split.remove.byterange.bysen` 
+(with all duplicated sentences). Duplicated text identified as in 
+[Lee et al., 2021](https://aclanthology.org/2022.acl-long.577/) is dumped in `dataset_name.split.remove.byterange`, 
+where byte ranges of duplicated text are saved. For each text chunk, we only retained sentences 
+(starting with a capitalized character, ending with a period, and longer than 5 characters) and distinguished 
+duplicated sentences within-note and between-note, respectively.
+
+Execute the duplication identification steps via:
+
+```
+bash duplication_identification.sh
+```
+ 
+
+---
+
 [^1]
 Wikipedia data was downloaded as
 
