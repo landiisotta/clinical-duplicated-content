@@ -373,7 +373,7 @@ fn cmd_make(fpath: &String)   -> std::io::Result<()> {
 
     let ratio = ((text.len() as f64).log2()/8.0).ceil() as usize;
     println!("Ratio: {}", ratio);
-    
+
     let mut buffer = File::create(fpath.clone() + ".table.bin")?;
     let bufout = to_bytes(&table, ratio);
     println!("Writing the suffix array at time t={}ms", now.elapsed().as_millis());
@@ -412,9 +412,11 @@ fn cmd_make_part(fpath: &String, start: u64, end: u64)   -> std::io::Result<()> 
 
     let ratio = ((text.len() as f64).log2()/8.0).ceil() as usize;
     println!("Ratio: {}", ratio);
-    
-    let mut buffer = File::create(format!("{}.part.{}-{}.table.bin", fpath, start, end))?;
-    let mut buffer2 = File::create(format!("{}.part.{}-{}", fpath, start, end))?;
+//      Modified to save byte chunks to tmp
+    let file_path = fpath.split("/").collect::<Vec<_>>()[1];
+    let mut buffer = File::create(format!("tmp/{}.part.{}-{}.table.bin", file_path, start, end))?;
+    let mut buffer2 = File::create(format!("tmp/{}.part.{}-{}", file_path, start, end))?;
+//
     let bufout = to_bytes(&table, ratio);
     println!("Writing the suffix array at time t={}ms", now.elapsed().as_millis());
     buffer.write_all(&bufout)?;
