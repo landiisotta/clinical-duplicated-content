@@ -45,10 +45,10 @@ python3 scripts/note_tokenization.py \
   --split train \
   --tokenize
 #ALTERNATIVE
-# Tokenize alla available splits
-python3 scripts/note_tokenization.py \
-  --save_dir data \
-  --corpus_name DATASET1 \
-  --all_splits \
-  --tokenize
+## Tokenize alla available splits
+#python3 scripts/note_tokenization.py \
+#  --save_dir data \
+#  --corpus_name DATASET1 \
+#  --all_splits \
+#  --tokenize
 
