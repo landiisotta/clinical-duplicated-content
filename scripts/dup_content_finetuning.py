@@ -38,6 +38,7 @@ def compute_metrics(eval_pred):
 
 
 parser = argparse.ArgumentParser(description='Duplicated content classification task')
+parser.add_argument('--dataset_name', help='Name of the dataset of interest')
 parser.add_argument('--tokenizer', help='Path to the tokenizer')
 parser.add_argument('--model_name', help='Name of the task-adapted model', default='')
 config = parser.parse_args(sys.argv[1:])
@@ -46,9 +47,9 @@ config = parser.parse_args(sys.argv[1:])
 label_dt = {'train': {},
             'dev': {},
             'test': {}}
-for p in Path('data').glob('**/*ANNOTATED'):
+for p in Path('data').glob(f'{config.dataset_name}*ANNOTATED'):
     print(p)
-    fold = str(p).split('/')[-1].split('.')[0]
+    fold = str(p).split('/')[-1].split('.')[1]
     label = str(p).split('/')[-1].split('.')[-1].split('-')[0]
     with open(p, 'r') as f:
         for line in f:

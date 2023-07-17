@@ -49,7 +49,7 @@ print('*' * 100)
 # Store annotated sentences (no need to label them)
 if not config.no_annotated:
     annt_files_gen = Path('data').glob(
-        '*ANNOTATED')
+        f'{config.dataset_name}*ANNOTATED')
     annt_sen_set = set()
     for p in annt_files_gen:
         print(p)
@@ -59,7 +59,7 @@ else:
 
 # Collect sentences to be labeled
 unlabeled_file_gen = Path('data').glob(
-    '*.sen')
+    f'{config.dataset_name}*.sen')
 sen_out = []
 for p in unlabeled_file_gen:
     print(p)

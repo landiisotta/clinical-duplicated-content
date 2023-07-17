@@ -14,7 +14,7 @@ args = parser.parse_args()
 dataset_name = args.dataset_name
 
 lab_filepath = os.path.join(args.data_dir, dataset_name + args.model_name + '.label')
-nr_annt_filepath = Path(args.data_dir).glob('*not-relevant-ANNOTATED')
+nr_annt_filepath = Path(args.data_dir).glob(f'{dataset_name}*not-relevant-ANNOTATED')
 
 byterange_filepath = os.path.join(args.data_dir, dataset_name + '.' + args.split + '.remove.byterange.bysen')
 

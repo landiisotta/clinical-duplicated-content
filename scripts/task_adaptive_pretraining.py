@@ -26,6 +26,7 @@ def tokenize_function(examples):
 
 
 parser = argparse.ArgumentParser(description='Task-adaptive model')
+parser.add_argument('--dataset_name', type=str, help='Name of the dataset of interest')
 parser.add_argument('--model', help='Path to BERT-like model')
 parser.add_argument('--model_name',
                     help='Name of the BERT-like model',
@@ -36,10 +37,10 @@ config = parser.parse_args(sys.argv[1:])
 task_dt = {'train': {},
            'dev': {},
            'test': {}}
-for p in Path('data').glob('**/*.sen'):
+for p in Path('data').glob(f'{config.dataset_name}*.sen'):
     # it = 0
     print(p)
-    fold = str(p).split('/')[-1].split('.')[0]
+    fold = str(p).split('/')[-1].split('.')[1]
     with open(p, 'r') as f:
         for line in f:
             ll = line.strip().split(',')

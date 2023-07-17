@@ -16,6 +16,7 @@ parser.add_argument('--nr_regex', type=str, default='[Aa]gree|[Pp]lease (return|
 args = parser.parse_args()
 
 data_path = args.dataset_path
+dataset_name = data_path.split('/')[-1].split('.')[0]
 dupcontent_path = args.dupcontent_path
 save_dir = args.save_dir
 n_annotate = args.n_annotate
@@ -77,24 +78,24 @@ def to_annotate(examples, n_examples):
 dataset, dupcontent_count = read_note_and_content(data_path, dupcontent_path)
 if not args.no_split:
     dc_train, dc_dev, dc_test = create_train_dev_test_split(list(dupcontent_count.items()))
-    dump_sentences(sorted(dc_dev, key=lambda x: x[1], reverse=True), 'dev.sen', save_dir)
-    dump_sentences(sorted(dc_test, key=lambda x: x[1], reverse=True), 'test.sen', save_dir)
+    dump_sentences(sorted(dc_dev, key=lambda x: x[1], reverse=True), f'{dataset_name}.dev.sen', save_dir)
+    dump_sentences(sorted(dc_test, key=lambda x: x[1], reverse=True), f'{dataset_name}.test.sen', save_dir)
 else:
     dc_train = list(dupcontent_count.items())
     print('Dumping all sentences to training set.')
-dump_sentences(sorted(dc_train, key=lambda x: x[1], reverse=True), 'train.sen', save_dir)
+dump_sentences(sorted(dc_train, key=lambda x: x[1], reverse=True), f'{dataset_name}.train.sen', save_dir)
 
 if n_annotate > 0:
     # Train
     relevant, notrelevant = extract_labels(dc_train, args.nr_regex)
-    dump_sentences(to_annotate(relevant, n_annotate), 'train.relevant', save_dir)
-    dump_sentences(to_annotate(notrelevant, n_annotate), 'train.not-relevant', save_dir)
+    dump_sentences(to_annotate(relevant, n_annotate), f'{dataset_name}.train.relevant', save_dir)
+    dump_sentences(to_annotate(notrelevant, n_annotate), f'{dataset_name}.train.not-relevant', save_dir)
     if not args.no_split:
         # Dev
         relevant, notrelevant = extract_labels(dc_dev, args.nr_regex)
-        dump_sentences(to_annotate(relevant, n_annotate), 'dev.relevant', save_dir)
-        dump_sentences(to_annotate(notrelevant, n_annotate), 'dev.not-relevant', save_dir)
+        dump_sentences(to_annotate(relevant, n_annotate), f'{dataset_name}.dev.relevant', save_dir)
+        dump_sentences(to_annotate(notrelevant, n_annotate), f'{dataset_name}.dev.not-relevant', save_dir)
         # Test
         relevant, notrelevant = extract_labels(dc_test, args.nr_regex)
-        dump_sentences(to_annotate(relevant, n_annotate), 'test.relevant', save_dir)
-        dump_sentences(to_annotate(notrelevant, n_annotate), 'test.not-relevant', save_dir)
+        dump_sentences(to_annotate(relevant, n_annotate), f'{dataset_name}.test.relevant', save_dir)
+        dump_sentences(to_annotate(notrelevant, n_annotate), f'{dataset_name}.test.not-relevant', save_dir)
