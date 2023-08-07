@@ -58,7 +58,107 @@ Execute the duplication identification steps via:
 ```
 bash duplication_identification.sh
 ```
- 
+
+### Clinical not relevant duplicates classification
+The aim of this step is to fine-tune a BERT-like model to classify duplicated sentences as clinically relevant or not 
+relevant. Implementation includes: (1) sentences annotation; (2) task-adaptation of the (clinical) LM; 
+(3) fine-tuning.
+
+1. `create_task_dataset.py` enables the creation of files with sentences duplicated between notes 
+(their counts are also reported). Sentences are split into train/dev/test with 60/20/20 ratios. 
+From each dataset N sentences are sampled for annotation as relevant/not relevant. 
+It is possible to specify a regex to guide the selection for possible not relevant duplicates 
+(default is `[Aa]gree|[Pp]lease (return|call)`). Run as:
+
+    ```
+    python3 scripts/create_task_dataset.py --dataset_path data/DATASET1.train \
+        --dupcontent_path data/DATASET1.train.remove.byterange.bysen \
+        --save_dir data \
+        --n_annotate 10 \
+        --nr_regex '[Rr]eferences|[Ee]xternal [Ll]inks'
+    ```
+   
+   OR
+   
+   ```
+    python3 scripts/create_task_dataset.py --dataset_path data/DATASET2.train \
+        --dupcontent_path data/DATASET2.train.remove.byterange.bysen \
+        --save_dir data \
+        --no_split
+    ```
+
+For the toy dataset we assume not relevant information to be external links and references.
+
+    **Before moving to the task adaptation step, dumped sentences need to be manually annotated. To do that,
+     only keep sentences that are relevant or not relevant, respectively, in the corresponding files. Add a second column
+     with the counts of how many times those sentences are found in the corpus.
+     Then, rename files with (sen,count) as:
+        `data/train|dev|test.relevant|not-relevant-ANNOTATED`.**
+
+2. The task-adaptive pretraining module enables the adaptation of a language model to the task at hand by 
+further pretraining it on unlabeled examples. Run as:
+
+```
+python3 scripts/task_adaptive_pretraining.py \
+  --dataset_name DATASET1 \
+  --model GatorTron \
+  --model_name GatorTron
+```
+
+Task-adapted models are saved in `runs/ta_pretrainingModelName`.
+
+3. To fine-tune the task-adapted model run:
+
+```
+python3 scripts/dup_content_finetuning.py \
+    --dataset_name DATASET1 \
+    --tokenizer GatorTron \
+    --model_name GatorTron
+```
+
+Change `params` dictionary to enable hyperparameter tuning.
+
+4. With `bash not-relevant_content_extraction.sh` we run the following modules sequentially.
+
+- The module `dup_content_predict.py` allows to soft label as either clinically relevant or not relevant the between-note
+  duplicated sentences. The flag `--no_annotated` indicates that no sentences were manually annotated and hence they 
+  don't need to be subtracted from the unlabeled sentence list.
+    
+  ```
+   python3 scripts/dup_content_predict.py --dataset_name DATASET1 --tokenizer GatorTron --model_name GatorTron
+  ```
+  
+  OR
+  
+  ```
+  python3 scripts/dup_content_predict.py --dataset_name DATASET1 --tokenizer GatorTron --model_name GatorTron --no_annotated
+  ```
+
+- The module `extract_nrbyterange.py` allows the extraction of the byte offsets corresponding to the not relevant sentences. 
+  After running:
+
+  ```
+  python3 scripts/extract_nrbyterange.py \
+    --split train \
+    --data_dir data \
+    --dataset_name DATASET1 \
+    --model_name GatorTron
+  ```
+
+5. To externally validate the fine-tuned model, we can use `extract_sen_manual_validation.py` on DATASET2 
+(but also DATASET1 for manual validation) to extract N examples to check:
+
+```
+python3 scripts/extract_sen_manual_validation.py \
+    --dataset_name DATASET1 \
+    --model_name GatorTron \
+    --data_dir data \
+    --n_manual 10
+```
+
+### Dataset deduplication
+The module `sample_dedup.py` randomly extracts N notes from each configuration obtained through the 
+`deduplication_configurations.py` scripts in the corresponding folder.
 
 ---
 
