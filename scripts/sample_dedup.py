@@ -24,10 +24,13 @@ def sample_fold(sample_size, seed, fold):
     rng = random.Random(seed)
     print(f"Sampling with seed {seed}")
     sample = []
-    for dt_name in doc_ids:
-        sample += rng.sample(doc_ids[dt_name], int(sample_size / 2))
+    if len(doc_ids) == 1:
+        sample += rng.sample(doc_ids[list(doc_ids.keys())[0]], sample_size)
+    else:
+        for dt_name in doc_ids:
+            sample += rng.sample(doc_ids[dt_name], int(sample_size / 2))
 
-    for config in tqdm(['NONE', 'WN', 'WNNR', 'WNBN'], total=4):
+    for config in ['NONE', 'WN', 'WNNR', 'WNBN']:
         print(f'Saving sample for {config} {fold} set.')
         PROGRESS_BAR = tqdm()
         PROGRESS_BAR.total = len(dt[config][fold])
@@ -51,6 +54,7 @@ def sample_fold(sample_size, seed, fold):
                 else:
                     PROGRESS_BAR.update(1)
                     id_ += 1
+        print(f'Count: {count}\n\n')
     return
 
 
@@ -70,19 +74,3 @@ if __name__ == '__main__':
                         help="Fold to extract the subsample from")
     args = parser.parse_args(sys.argv[1:])
     sample_fold(args.sample_size, args.seed, args.fold)
-
-"""
-for SEED in 1234 0; do
-    python3 sample_dedup_test.py \
-        --sample_size=10000 \
-        --seed=$SEED \
-        --fold=test
-    done
-
-for SEED in 1988 54; do
-    python3 sample_dedup_test.py \
-        --sample_size=10000 \
-        --seed=$SEED \
-        --fold=test
-    done
-"""

@@ -51,13 +51,12 @@ class ClinicalNotes(datasets.GeneratorBasedBuilder):
         folds = Path(data_dir).glob(f'{self.config.name}.*.csv')
         return [
             datasets.SplitGenerator(
-                name=datasets.Split[f'{str(f).split(".")[-2].upper()}'],
+                name=getattr(datasets.Split, str(f).split('.')[-2].upper()),
                 # These kwargs will be passed to _generate_examples
                 gen_kwargs={
-                    "filepath": f,
+                    "filepath": str(f),
                 },
-            )
-            for f in folds]
+            ) for f in folds]
 
     def _generate_examples(self, filepath):
         with open(filepath, encoding="utf-8") as f:

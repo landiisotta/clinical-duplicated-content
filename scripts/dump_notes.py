@@ -1,7 +1,7 @@
 """
 This module takes as input a .csv file with clinical notes and returns a standardized .csv file
 retaining relevant columns: subject id, note id, date and time, note type, and text. If enabled, output can also
-be split into train.dev/test folds.
+be split into train.validation/test folds.
 """
 import random
 import argparse
@@ -12,7 +12,7 @@ from datetime import date
 
 rng = random.Random(42)
 
-parser = argparse.ArgumentParser(description="Create train/dev/test splits.")
+parser = argparse.ArgumentParser(description="Create train/validation/test splits.")
 parser.add_argument('--data_dir', type=str, help='Folder where input is stored')
 parser.add_argument('--file_name', type=str, help='Notes file name')
 parser.add_argument('--output_name', type=str, help='Output file name')
@@ -22,11 +22,11 @@ parser.add_argument('--note_id', type=str, default=None)
 parser.add_argument('--datetime', type=str, default=None)
 parser.add_argument('--type', type=str, default=None)
 parser.add_argument('--note_text', type=str)
-parser.add_argument('--only_dev', action='store_true')
+parser.add_argument('--only_validation', action='store_true')
 parser.add_argument('--only_train', action='store_true')
-parser.add_argument('--split_ratio', type=float, default=0.0, help='Ratio of dev set examples. If both only_dev and '
+parser.add_argument('--split_ratio', type=float, default=0.0, help='Ratio of validation set examples. If both only_validation and '
                                                                    'only_train are set to False, then the ratio refers '
-                                                                   'to both dev and test sets.')
+                                                                   'to both validation and test sets.')
 
 args = parser.parse_args()
 
@@ -50,30 +50,30 @@ if args.note_id is None:
 else:
     note_id = args.note_id
 
-if args.only_dev:
-    print(f"Creating dev set ({split_ratio * 100}%) split from training notes.")
+if args.only_validation:
+    print(f"Creating validation set ({split_ratio * 100}%) split from training notes.")
     if split_ratio <= 0.0:
         raise ValueError('Split ratio should be > 0.0')
-    idx_train, idx_dev = train_test_split(subj_id, test_size=split_ratio, random_state=42)
+    idx_train, idx_validation = train_test_split(subj_id, test_size=split_ratio, random_state=42)
     splits['test'] = None
 elif args.only_train:
     idx_train = subj_id
-    idx_dev = None
+    idx_validation = None
 else:
     if split_ratio >= 0.5:
-        raise ValueError('Split ratio refers to both dev and test sets. It should be < 0.5 to retain any example in '
+        raise ValueError('Split ratio refers to both validation and test sets. It should be < 0.5 to retain any example in '
                          'training set.')
     print(
-        f"Creating train/dev/test ({100 - (split_ratio * 200)}/{split_ratio * 100}/{split_ratio * 100}%) "
+        f"Creating train/validation/test ({100 - (split_ratio * 200)}/{split_ratio * 100}/{split_ratio * 100}%) "
         f"splits from notes.")
     if split_ratio <= 0.0:
         raise ValueError('Split ratio should be > 0.0')
     idx_train, idx_test = train_test_split(subj_id, test_size=split_ratio * 2, random_state=42)
-    idx_dev, idx_test = train_test_split(idx_test, test_size=0.5, random_state=42)
+    idx_validation, idx_test = train_test_split(idx_test, test_size=0.5, random_state=42)
     splits['test'] = idx_test
 
 splits['train'] = idx_train
-splits['dev'] = idx_dev
+splits['validation'] = idx_validation
 
 for s, idx in splits.items():
     if idx is not None:

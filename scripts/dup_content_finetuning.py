@@ -45,7 +45,7 @@ config = parser.parse_args(sys.argv[1:])
 
 # Create task Dataset from annotated samples
 label_dt = {'train': {},
-            'dev': {},
+            'validation': {},
             'test': {}}
 for p in Path('data').glob(f'{config.dataset_name}*ANNOTATED'):
     print(p)
@@ -110,7 +110,7 @@ params = {
 if not os.path.isdir(f'runs/ta_finetuning{config.model_name}'):
     os.makedirs(f'runs/ta_finetuning{config.model_name}')
 
-metrics_file = f'runs/ta_finetuning{config.model_name}/gs_finetuning_dev.metrics'
+metrics_file = f'runs/ta_finetuning{config.model_name}/gs_finetuning_validation.metrics'
 if os.path.isfile(metrics_file):
     skip = True
 else:
@@ -149,7 +149,7 @@ for comb in list(ParameterGrid(params)):
                       args=training_args,
                       callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
                       train_dataset=tkn_dt['train'],
-                      eval_dataset=tkn_dt['dev'],
+                      eval_dataset=tkn_dt['validation'],
                       compute_metrics=compute_metrics,
                       data_collator=data_collator)
     results = trainer.train()
@@ -170,7 +170,7 @@ if tmp_trainer is not None:
     best_trainer = tmp_trainer
     best_comb = tmp_comb
     print(f'Best parameters configuration: {best_comb}')
-    dev_pred = best_trainer.predict(tkn_dt['dev'])
+    dev_pred = best_trainer.predict(tkn_dt['validation'])
     pred = np.argmax(dev_pred.predictions, axis=-1)
     pred_score = np.max(torch.nn.functional.softmax(torch.tensor(dev_pred.predictions), dim=-1).numpy(), axis=-1)
     i = 0
@@ -180,14 +180,14 @@ if tmp_trainer is not None:
         if pred_lab != true_lab:
             if pred_lab == 1:
                 errors['FP'].append((
-                    tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(tkn_dt['dev']['input_ids'][i])),
+                    tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(tkn_dt['validation']['input_ids'][i])),
                     pred_score[i]))
                 # print(tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(tkn_dt['dev'][i]['input_ids'])),
                 #       'NOT-RELEVANT', 'TRUE_RELEVANT')
                 # print('\n')
             else:
                 errors['FN'].append((tokenizer.convert_tokens_to_string(
-                    tokenizer.convert_ids_to_tokens(tkn_dt['dev']['input_ids'][i])), pred_score[i]))
+                    tokenizer.convert_ids_to_tokens(tkn_dt['validation']['input_ids'][i])), pred_score[i]))
                 # print(tokenizer.convert_tokens_to_string(tokenizer.convert_ids_to_tokens(tkn_dt['dev'][i]['input_ids'])),
                 #       'RELEVANT', 'TRUE_NOT-RELEVANT')
                 # print('\n')

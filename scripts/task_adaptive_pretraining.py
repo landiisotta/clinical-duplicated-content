@@ -35,7 +35,7 @@ config = parser.parse_args(sys.argv[1:])
 
 # Create task Dataset
 task_dt = {'train': {},
-           'dev': {},
+           'validation': {},
            'test': {}}
 for p in Path('data').glob(f'{config.dataset_name}*.sen'):
     # it = 0
@@ -83,7 +83,7 @@ trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=tkn_dt['train'],
-    eval_dataset=tkn_dt['dev'],
+    eval_dataset=tkn_dt['validation'],
     data_collator=data_collator,
 )
 # result = trainer.train(resume_from_checkpoint=True)

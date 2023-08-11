@@ -40,11 +40,11 @@ def read_note_and_content(dt_filepath,
     return dt, dup_count
 
 
-def create_train_dev_test_split(sentences):
+def create_train_validation_test_split(sentences):
     seed = 42
     train, test = train_test_split(sentences, train_size=0.60, random_state=seed)
-    dev, test = train_test_split(test, train_size=0.50, random_state=seed)
-    return train, dev, test
+    validation, test = train_test_split(test, train_size=0.50, random_state=seed)
+    return train, validation, test
 
 
 def dump_sentences(sentcounts, filename, filepath):
@@ -77,8 +77,8 @@ def to_annotate(examples, n_examples):
 
 dataset, dupcontent_count = read_note_and_content(data_path, dupcontent_path)
 if not args.no_split:
-    dc_train, dc_dev, dc_test = create_train_dev_test_split(list(dupcontent_count.items()))
-    dump_sentences(sorted(dc_dev, key=lambda x: x[1], reverse=True), f'{dataset_name}.dev.sen', save_dir)
+    dc_train, dc_validation, dc_test = create_train_validation_test_split(list(dupcontent_count.items()))
+    dump_sentences(sorted(dc_validation, key=lambda x: x[1], reverse=True), f'{dataset_name}.validation.sen', save_dir)
     dump_sentences(sorted(dc_test, key=lambda x: x[1], reverse=True), f'{dataset_name}.test.sen', save_dir)
 else:
     dc_train = list(dupcontent_count.items())
@@ -92,9 +92,9 @@ if n_annotate > 0:
     dump_sentences(to_annotate(notrelevant, n_annotate), f'{dataset_name}.train.not-relevant', save_dir)
     if not args.no_split:
         # Dev
-        relevant, notrelevant = extract_labels(dc_dev, args.nr_regex)
-        dump_sentences(to_annotate(relevant, n_annotate), f'{dataset_name}.dev.relevant', save_dir)
-        dump_sentences(to_annotate(notrelevant, n_annotate), f'{dataset_name}.dev.not-relevant', save_dir)
+        relevant, notrelevant = extract_labels(dc_validation, args.nr_regex)
+        dump_sentences(to_annotate(relevant, n_annotate), f'{dataset_name}.validation.relevant', save_dir)
+        dump_sentences(to_annotate(notrelevant, n_annotate), f'{dataset_name}.validation.not-relevant', save_dir)
         # Test
         relevant, notrelevant = extract_labels(dc_test, args.nr_regex)
         dump_sentences(to_annotate(relevant, n_annotate), f'{dataset_name}.test.relevant', save_dir)

@@ -158,7 +158,79 @@ python3 scripts/extract_sen_manual_validation.py \
 
 ### Dataset deduplication
 The module `sample_dedup.py` randomly extracts N notes from each configuration obtained through the 
-`deduplication_configurations.py` scripts in the corresponding folder.
+`deduplication_configurations.py` scripts in the corresponding folder. Multiple datasets are combined when deduplication
+configurations are created. Sampling happens equally in all datasets combined (N/n each, where n is the number of
+combined datasets). This module enables the creation of a subset of notes that can be used for faster domain adaptation.
+Run as:
+```
+SAMPLE_SIZE=100
+SEED=42
+FOLD=train
+
+python3 scripts/sample_dedup.py \
+        --sample_size=$SAMPLE_SIZE \
+        --seed=$SEED \
+        --fold=$FOLD
+```
+
+### Domain adaptation
+The domain adaptation phase is characterized by a (1) pretraining phase (`da_pretraining.py`) and an (2) evaluation 
+phase (`da_eval.py`). 
+
+- During the pretraining phase, the user provides the training configuration, the sample size, and 
+  the seed used to generate the sampling, together with the model's name and hyperparameters. The selected model is then 
+  further fine-tuned to adapt to different deduplicated corpora. PPL is evaluated on the training set as a sanity check.
+  Best model is saved in `runs` folder.
+  
+  Run as:
+  
+  ```
+  SAMPLE_SIZE=100
+  SEED=42
+  DEDUP_CONFIG=NONE
+  MODEL=GatorTron
+  STEPS=2
+  MAX_SEQ_LEN=128
+  BATCH_SIZE=8
+  LEARNING_RATE=1e-5
+  python3 scripts/da_pretraining.py \
+    --sample_size=$SAMPLE_SIZE \
+    --dedup_config=$DEDUP_CONFIG \
+    --seed=$SEED \
+    --model=$MODEL \
+    --n_steps=$STEPS \
+    --max_seq_length=$MAX_SEQ_LEN \
+    --batch_size=$BATCH_SIZE \
+    --lr=$LEARNING_RATE
+  ```
+
+- During the evaluation phase, the further pretrained models are evaluated on all deduplicated test set configurations 
+  possibly using multiple seeds. PPL is saved in `experiments.txt`.
+  
+  Run as:
+  
+  ```
+  SAMPLE_SIZE=100
+  SEED_TRAIN=42
+  SEED_TEST=42
+  DEDUP_CONFIG_TRAIN=NONE
+  DEDUP_CONFIG_TEST=WNBN
+  MODEL=GatorTron
+  MAX_SEQ_LEN=128
+  BATCH_SIZE=8
+  python3 scripts/da_eval.py \
+    --sample_size=$SAMPLE_SIZE \
+    --seed_train=$SEED_TRAIN \
+    --seed_test=$SEED_TEST \
+    --dedup_config_train=$DEDUP_CONFIG_TRAIN \
+    --dedup_config_test=$DEDUP_CONFIG_TEST \
+    --model_name=$MODEL \
+    --max_seq_length=$MAX_SEQ_LEN \
+    --batch_size=$BATCH_SIZE
+  ```
+   
+
+
 
 ---
 

@@ -96,8 +96,9 @@ post_sep = args.post_sep
 UID = 0
 
 ds = load_dataset(name=dataset_name,
-                  path='./',
+                  path='data',
                   cache_dir='.cache/huggingface/datasets')
+print(ds)
 if not args.all_splits:
     ds = ds[split]
     assert isinstance(ds, datasets.Dataset)

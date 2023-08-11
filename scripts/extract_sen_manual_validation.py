@@ -31,7 +31,7 @@ def read_pred_file(file_path):
 
 def dump_sen(pred_sen_dict, n, dataset_name, model_name, data_path):
     for label in ['relevant', 'not-relevant']:
-        output_name = os.path.join(data_path, f'{dataset_name}{model_name}.validate.label')
+        output_name = os.path.join(data_path, f'{dataset_name}{model_name}.validate.{label}')
         with open(output_name, 'w') as f:
             try:
                 sents = rng.sample(pred_sen_dict[label.upper()], n)
