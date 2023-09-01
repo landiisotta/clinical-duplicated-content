@@ -9,7 +9,7 @@ LMs and downstream tasks is still understudied.
 
 This work includes:
 
-1. The identification of duplicates defined as: _witin-note_; _between-note not relevant_; _between-note relevant_;
+1. The identification of duplicates defined as: _within-note_; _between-note not relevant_; _between-note relevant_;
     - Clinical relevance is identified via a fine-tuned GatorTron model that classifies duplicates 
     as clinically relevant or not relevant.
     
@@ -228,7 +228,10 @@ phase (`da_eval.py`).
     --max_seq_length=$MAX_SEQ_LEN \
     --batch_size=$BATCH_SIZE
   ```
-   
+
+### Prompt-based classification
+To run the text classification downstream task with a propt-based approach, modify and run the script `prompt_based_classification.py`
+to tune the pretrained models for a specific classification task on either deduplicated or original text. 
 
 
 
